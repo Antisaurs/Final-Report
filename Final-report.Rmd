@@ -1,0 +1,112 @@
+---
+title: "Final-report"
+output: html_document
+date: "2023-12-20"
+---
+  
+  
+
+
+```{r pressure, echo=FALSE}
+library(datasets)
+library(dplyr)
+library(tidyr)
+library(psych)
+library(ggplot2)
+data("iris")
+head(iris)
+```
+
+```{r pressure_chunk1, echo=FALSE}
+psych::describe(iris)
+iris$Sepal.Size <- iris$Sepal.Width * iris$Sepal.Length
+iris$Petal.Size <- iris$Petal.Width * iris$Petal.Length
+iris_reordered <- iris %>%
+  select(Species, Sepal.Length, Sepal.Width, Sepal.Size, Petal.Length, Petal.Width, Petal.Size)
+
+head(iris_reordered)
+```
+
+```{r pressure_chunk2, echo=FALSE}
+ggplot(iris, aes(x = Sepal.Width, y = Sepal.Length, color = Species)) +
+  geom_point() +
+  ggtitle("Sepal Width & Sepal Length Between Different Species") +
+  xlab("Sepal Width") +
+  ylab("Sepal Length")
+ggplot(iris, aes(x = Petal.Width, y = Petal.Length, color = Species)) +
+  geom_point() +
+  ggtitle("Petal Width & Length Between Different Species") +
+  xlab("Petal Width") +
+  ylab("Petal Length")
+
+mean_sepal_size <- iris %>%
+  group_by(Species) %>%
+  summarise(Mean_Sepal_Size = mean(Sepal.Width * Sepal.Length),
+            SE = sd(Sepal.Width * Sepal.Length) / sqrt(n()))
+
+# 绘制条形图和误差条
+ggplot(mean_sepal_size, aes(x = Species, y = Mean_Sepal_Size, fill = Species)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_errorbar(aes(ymin = Mean_Sepal_Size - SE, ymax = Mean_Sepal_Size + SE),
+                position = position_dodge(width = 0.9), width = 0.25) +
+  labs(title = "Mean Sepal.size by Species with Error Bars",
+       x = "Species",
+       y = "Mean Sepal.size") +
+  theme_minimal()
+
+mean_Petal_size <- iris %>%
+  group_by(Species) %>%
+  summarise(Mean_Petal_Size = mean(Petal.Width * Petal.Length),
+            SE = sd(Petal.Width * Petal.Length) / sqrt(n()))
+
+# 绘制条形图和误差条
+ggplot(mean_Petal_size, aes(x = Species, y = Mean_Petal_Size, fill = Species)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_errorbar(aes(ymin = Mean_Petal_Size - SE, ymax = Mean_Petal_Size + SE),
+                position = position_dodge(width = 0.1), width = 0.25) +
+  labs(title = "Mean Petal.size by Species with Error Bars",
+       x = "Species",
+       y = "Mean Petal.size") +
+  theme_minimal()
+
+```
+
+
+```{r pressure_chunk3, echo=FALSE}
+# 使用方差分析进行不同物种的均值比较
+anova_result <- aov(Sepal.Size ~ Species, data = iris)
+
+# 进行多重比较(Tukey's HSD检验)
+tukey_result <- TukeyHSD(anova_result)
+
+# 打印ANOVA结果
+print(summary(anova_result))
+
+# 打印Tukey's HSD检验结果
+print(tukey_result)
+
+# 绘制多重比较图
+plot(tukey_result)
+
+
+
+# 使用方差分析进行不同物种的均值比较
+anova_result <- aov(Petal.Size ~ Species, data = iris)
+
+# 进行多重比较(Tukey's HSD检验)
+tukey_result <- TukeyHSD(anova_result)
+
+# 打印ANOVA结果
+print(summary(anova_result))
+
+# 打印Tukey's HSD检验结果
+print(tukey_result)
+
+# 绘制多重比较图
+plot(tukey_result)
+```
+
+
+#The results showed that there was a significant difference in sepal size between virginica and setosa, also virginica and versicolor.
+#The results showed significant differences in petal size among the three species.
+
